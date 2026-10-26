@@ -1,4 +1,8 @@
 <p align="center">
+  <strong>English</strong> · <a href="README.zh-CN.md">简体中文</a>
+</p>
+
+<p align="center">
   <img src="assets/hero.svg" alt="M1FanControl — automatic cooling and verified recovery for Apple M1" width="100%">
 </p>
 

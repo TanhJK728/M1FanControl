@@ -7,4 +7,6 @@ Original SVG artwork created for M1FanControl and licensed under the project [MI
 - `badges.svg`: static release, language, hardware scope and license facts; not CI status.
 - `control-lifecycle.svg`: conceptual monitor/control/release diagram; no recorded hardware data.
 
+The `hero.zh-CN.svg`, `badges.zh-CN.svg` and `control-lifecycle.zh-CN.svg` variants localize the same artwork for the Simplified Chinese README. The fan mark, palette and layout are shared. Chinese font fallbacks use system fonts; no font files are bundled.
+
 SVGs use fixed view boxes, accessible titles/descriptions and no scripts, external resources or animations. Keep technical labels aligned with the documented implementation.

@@ -3,11 +3,15 @@ Cargo.lock
 Cargo.toml
 LICENSE
 README.md
+README.zh-CN.md
 THIRD_PARTY_NOTICES.md
 assets/README.md
 assets/badges.svg
+assets/badges.zh-CN.svg
 assets/control-lifecycle.svg
+assets/control-lifecycle.zh-CN.svg
 assets/hero.svg
+assets/hero.zh-CN.svg
 assets/icon.svg
 deploy/README.md
 deploy/ServiceInstall.pm

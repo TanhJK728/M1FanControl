@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="384" viewBox="0 0 1280 384" role="img" aria-labelledby="title desc">
+<title id="title">M1FanControl — 面向 Apple M1 的自动散热</title>
+<desc id="desc">原创风扇插画。监测芯片与电池温度，动态控制转速，验证自动模式恢复，并提供可选的 launchd 服务。图中不含硬件实测数据。</desc>
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101c2b"/><stop offset="1" stop-color="#070e17"/></linearGradient>
+ <linearGradient id="blade" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#75e7e0"/><stop offset="1" stop-color="#4b91ea"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#203e54" stop-opacity=".8"/><stop offset="1" stop-color="#0b1420" stop-opacity="0"/></radialGradient>
+</defs>
+<rect x="1" y="1" width="1278" height="382" rx="24" fill="url(#bg)" stroke="#29394b"/>
+<circle cx="1022" cy="183" r="195" fill="url(#glow)"/>
+<path d="M 828 32 V 352" stroke="#253446"/>
+<g font-family="Arial, Helvetica, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif">
+ <rect x="52" y="48" width="8" height="8" rx="2" fill="#75e7e0"/>
+ <text x="72" y="57" font-size="13" font-weight="600" letter-spacing="2" fill="#96aabd">APPLE M1 / MACOS</text>
+ <text x="49" y="145" font-size="68" font-weight="700" letter-spacing="-2" fill="#f4f8fc">M1FanControl</text>
+ <text x="52" y="193" font-size="26" font-weight="500" fill="#b9ccd9">自动散热，恢复有据。</text>
+ <text x="52" y="232" font-size="17" fill="#8fa5b8">轻量 Rust 命令行，覆盖监测、控制与恢复。</text>
+ <g font-size="11" font-weight="600" letter-spacing="1">
+  <rect x="52" y="293" width="144" height="31" rx="8" fill="#17313a"/><text x="124" y="313" text-anchor="middle" fill="#8cddd5">芯片 + 电池</text>
+  <rect x="206" y="293" width="131" height="31" rx="8" fill="#1a2b41"/><text x="271.5" y="313" text-anchor="middle" fill="#9abfe9">动态转速</text>
+  <rect x="347" y="293" width="150" height="31" rx="8" fill="#1c2a37"/><text x="422" y="313" text-anchor="middle" fill="#a7bdcf">launchd 服务</text>
+ </g>
+ <text x="1022" y="333" text-anchor="middle" font-size="11" letter-spacing="1.2" fill="#94b2c5">监测 / 散热 / 交还控制</text>
+</g>
+<g transform="translate(1022 177)">
+ <circle r="126" fill="none" stroke="#263c50"/>
+ <circle r="116" fill="none" stroke="#264659" stroke-dasharray="2 12"/>
+ <path d="M -11 -21 C 3 -70 49 -111 86 -87 C 109 -71 92 -27 37 -7 C 19 0 1 -4 -11 -21 Z" transform="rotate(0)" fill="url(#blade)" opacity="0.940"/><path d="M -11 -21 C 3 -70 49 -111 86 -87 C 109 -71 92 -27 37 -7 C 19 0 1 -4 -11 -21 Z" transform="rotate(60)" fill="url(#blade)" opacity="0.875"/><path d="M -11 -21 C 3 -70 49 -111 86 -87 C 109 -71 92 -27 37 -7 C 19 0 1 -4 -11 -21 Z" transform="rotate(120)" fill="url(#blade)" opacity="0.810"/><path d="M -11 -21 C 3 -70 49 -111 86 -87 C 109 -71 92 -27 37 -7 C 19 0 1 -4 -11 -21 Z" transform="rotate(180)" fill="url(#blade)" opacity="0.745"/><path d="M -11 -21 C 3 -70 49 -111 86 -87 C 109 -71 92 -27 37 -7 C 19 0 1 -4 -11 -21 Z" transform="rotate(240)" fill="url(#blade)" opacity="0.680"/><path d="M -11 -21 C 3 -70 49 -111 86 -87 C 109 -71 92 -27 37 -7 C 19 0 1 -4 -11 -21 Z" transform="rotate(300)" fill="url(#blade)" opacity="0.615"/>
+ <circle r="25" fill="#101d2b" stroke="#a0e9e5" stroke-width="2"/>
+ <circle r="8" fill="#75e7e0"/>
+</g>
+</svg>

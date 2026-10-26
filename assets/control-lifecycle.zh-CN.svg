@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="272" viewBox="0 0 1200 272" role="img" aria-labelledby="title desc">
+<title id="title">监测、散热，再交还 macOS 管理</title><desc id="desc">经过验证的芯片与电池温度触发有时限的控制流程。两项散热需求解除后，验证自动模式恢复并继续监测。此图说明控制流程，不包含硬件运行记录。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#6f8aa0"/></marker></defs>
+<rect x="1" y="1" width="1198" height="270" rx="18" fill="#f6f9fc" stroke="#dce5ee"/>
+<g font-family="Arial, Helvetica, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif">
+<text x="30" y="36" font-size="11" font-weight="600" letter-spacing="1.7" fill="#587189">完整的控制生命周期</text>
+<g transform="translate(30 63)"><rect width="340" height="131" rx="13" fill="white" stroke="#d2e1ed"/><circle cx="30" cy="32" r="13" fill="#e6f5f3"/><text x="30" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="#277f79">01</text><text x="54" y="38" font-size="21" font-weight="650" fill="#16344c">监测</text><text x="22" y="74" font-size="15" fill="#496377">验证芯片与电池温度数据</text><text x="22" y="101" font-size="13" fill="#687f92">macOS 保持风扇控制权</text></g>
+<g transform="translate(430 63)"><rect width="340" height="131" rx="13" fill="#102639" stroke="#23475c"/><circle cx="30" cy="32" r="13" fill="#204958"/><text x="30" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="#8ee5df">02</text><text x="54" y="38" font-size="21" font-weight="650" fill="#f2f7fa">散热</text><text x="22" y="74" font-size="15" fill="#c0d8e6">采用两项需求中较高的转速</text><text x="22" y="101" font-size="13" fill="#8fadc0">遵循硬件范围，验证状态读回</text></g>
+<g transform="translate(830 63)"><rect width="340" height="131" rx="13" fill="white" stroke="#d2e1ed"/><circle cx="30" cy="32" r="13" fill="#e9f0fa"/><text x="30" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="#4476aa">03</text><text x="54" y="38" font-size="21" font-weight="650" fill="#16344c">交还控制</text><text x="22" y="74" font-size="15" fill="#496377">持续降温后，两项需求均解除</text><text x="22" y="101" font-size="13" fill="#687f92">验证 macOS 自动模式恢复</text></g>
+<path d="M 380 129 H 418" stroke="#6f8aa0" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 780 129 H 818" stroke="#6f8aa0" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1000 206 V 229 H 201 V 206" fill="none" stroke="#a4b6c5" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="488" y="216" width="224" height="25" rx="8" fill="#f6f9fc"/><text x="600" y="233" text-anchor="middle" font-size="12" fill="#587189">继续监测温度</text>
+</g></svg>

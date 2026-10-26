@@ -29,3 +29,7 @@ The existing development project and installed controller were kept unchanged. N
 The README layout and original SVG artwork were refined after the initial source release. Assets contain no hardware measurements, external resources, scripts or embedded third-party artwork. Static badges describe the release and platform scope; they do not represent CI status. Attribution, supported-hardware boundaries and pending hardware validation remain visible.
 
 Source, tests, dependencies, deployment code and license texts are unchanged. The recorded build and test results above are reused for those identical inputs. This documentation update was checked for links, SVG structure/rendering, public-file coverage and sensitive information.
+
+## Simplified Chinese README
+
+The Simplified Chinese README adds a reciprocal language selector and localized versions of the existing artwork. Commands, thermal thresholds, attribution and validation scope follow the English README. Source and runtime files remain unchanged; the build and test records above still apply. Translation consistency, local links, SVG rendering and the published file list are checked separately for this documentation update.
