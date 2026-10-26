@@ -4,6 +4,11 @@ Cargo.toml
 LICENSE
 README.md
 THIRD_PARTY_NOTICES.md
+assets/README.md
+assets/badges.svg
+assets/control-lifecycle.svg
+assets/hero.svg
+assets/icon.svg
 deploy/README.md
 deploy/ServiceInstall.pm
 deploy/activate.sh

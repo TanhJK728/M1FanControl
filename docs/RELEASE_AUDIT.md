@@ -23,3 +23,9 @@ Machine-derived test values were replaced with coherent synthetic values, includ
 Original private development reports, evidence, reference clones, environment files, build outputs, toolchains, installation records, runtime files and audit working material are excluded. Detailed private findings remain outside the repository. The [public file list](PUBLIC_FILES.txt) enumerates the reviewed payload. The [provenance audit](PROVENANCE.md) records adapted implementation, interface references and independent contributions, including the transitive IOHID source review.
 
 The existing development project and installed controller were kept unchanged. No binary release attachment is distributed. Hardware validation limits remain documented in [README](../README.md) and [Development history](DEVELOPMENT_HISTORY.md).
+
+## Repository presentation update
+
+The README layout and original SVG artwork were refined after the initial source release. Assets contain no hardware measurements, external resources, scripts or embedded third-party artwork. Static badges describe the release and platform scope; they do not represent CI status. Attribution, supported-hardware boundaries and pending hardware validation remain visible.
+
+Source, tests, dependencies, deployment code and license texts are unchanged. The recorded build and test results above are reused for those identical inputs. This documentation update was checked for links, SVG structure/rendering, public-file coverage and sensitive information.

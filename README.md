@@ -1,106 +1,124 @@
-# M1FanControl
+<p align="center">
+  <img src="assets/hero.svg" alt="M1FanControl — automatic cooling and verified recovery for Apple M1" width="100%">
+</p>
 
-A lightweight open-source fan control and automatic thermal management tool for compatible Apple Silicon Macs.
+<p align="center">
+  <strong>A lightweight, local fan controller with automatic thermal management.</strong><br>
+  Monitor chip and battery temperatures. Cool on demand. Return control to macOS.
+</p>
 
-M1FanControl v0.5.0 reads fan registers through AppleSMC and named chip temperature events through IOHID. It takes control when chip or battery temperatures trigger cooling demand, then returns the fans to macOS when both demands have cleared. The CLI supports foreground use, a manually started background controller, and an optional system LaunchDaemon.
+<p align="center">
+  <img src="assets/badges.svg" alt="Version 0.5.0 · Rust · Apple M1 · MIT" width="600">
+</p>
+
+<p align="center">
+  <a href="#installation">Get started</a> ·
+  <a href="#cli-usage">CLI</a> ·
+  <a href="#automatic-thermal-control">Thermal policy</a> ·
+  <a href="deploy/README.md">System service</a> ·
+  <a href="docs/ARCHITECTURE.md">Architecture</a> ·
+  <a href="docs/PROVENANCE.md">Provenance</a>
+</p>
+
+---
+
+M1FanControl connects directly to **AppleSMC through IOKit** and reads named chip temperature events through **IOHID**. Run it in your Terminal, start a background worker, or install the optional system LaunchDaemon. Temperature demand determines when the controller takes over; verified automatic restoration returns fan management to macOS.
+
+Built for fan-equipped **Apple M1** Macs. No GUI, kernel extension or SIP changes required.
 
 ## Features
 
-- Live fan modes, actual and target RPM, hardware speed limits, and temperature readings.
-- Hardware maximum fan speed with automatic restoration on Ctrl+C.
-- Independent chip and battery cooling demands, hysteresis, and gradual speed reduction.
-- Separate write acknowledgement, bounded register readback, ownership, and RPM convergence checks.
-- Recovery responsibility recorded before service control writes, including across abnormal restarts.
-- Sleep notification handling, wake reconnection, fresh sensor qualification, and bounded retry delays.
-- Mock hardware and service tests; full SMC traces only when explicitly requested.
+| Observe | Control | Recover |
+| --- | --- | --- |
+| Actual and target RPM, fan modes and hardware limits | Hardware-maximum mode or automatic chip + battery cooling | Verified automatic restoration on stop and ordinary failures |
+| Live temperatures and read-only policy preview | Hysteresis, gradual speed reduction and bounded readback | Recovery journal, fresh sensor qualification and bounded retry |
+| Opt-in per-operation SMC traces | Foreground, detached worker or native launchd service | Sleep notification handling and wake reconnection |
 
-No GUI, kernel extension, SIP changes, or replacement of macOS thermal services is required.
-
-## Architecture
-
-```text
-IOHID chip temperatures + AppleSMC battery temperatures
-                         |
-                validate fresh samples
-                         |
-              chip / battery demand policy
-                         |
-              control session + readback
-                         |
-                 AppleSMC fan registers
-
-launchd -> foreground serve -> lifecycle supervisor
-                            -> sleep/wake notifications
-                            -> recovery journal + status IPC
-```
-
-The transport accepts only validated fan control keys. Speed limits come from the hardware on each control path. A single controller lock prevents concurrent M1FanControl writers. See [Architecture](docs/ARCHITECTURE.md) for the recovery and service lifecycle.
-
-## Supported Hardware / Compatibility
-
-Control is deliberately restricted to **Apple M1** on **ARM64 macOS**, with a physical fan and the expected SMC and IOHID interfaces. M1 Pro/Max/Ultra, newer chips, Intel Macs, and fanless Macs are outside the supported control scope. Automatic control requires complete named chip sensor groups and both battery temperature keys. Hardware validation covers a single-fan M1 configuration. Discovery and control support multiple fans in software; their physical behavior remains unvalidated.
-
-Development hardware validation covered a fan-equipped M1 MacBook Pro, manual and temperature-triggered acceleration, background operation, stop/restoration, and service management. Physical lid sleep/wake, boot before login, and a complete natural cooling-to-release cycle still need end-to-end validation. Mock tests cover these lifecycle paths. No compatibility or performance measurements are claimed for other systems.
-
-AppleSMC and the IOHID sensor SPI are undocumented or private interfaces that may change between macOS versions. The program rejects unsupported data rather than guessing keys or speed limits. Do not run another fan controller alongside it.
+<p align="center">
+  <img src="assets/control-lifecycle.svg" alt="Monitor validated temperatures, apply cooling demand, verify automatic release, then continue monitoring" width="100%">
+</p>
 
 ## Installation
 
-Install Apple's Command Line Tools and a current stable Rust toolchain with `rustfmt` and `clippy`. The project uses Rust edition 2024. The only Cargo dependency is `libc`, pinned by `Cargo.lock`.
+Install [Apple's Command Line Tools](https://developer.apple.com/xcode/resources/) and a current stable [Rust toolchain](https://rustup.rs/) with `rustfmt` and `clippy`. The project uses Rust edition 2024 and one Cargo dependency, `libc`, pinned by `Cargo.lock`.
 
 ```sh
-xcode-select --install
-# Install Rust using the instructions at https://rustup.rs/.
 git clone https://github.com/TanhJK728/M1FanControl.git
 cd M1FanControl
 cargo build --locked --release
-./target/release/m1fan --help
+
+# Start with read-only inspection
+./target/release/m1fan status
+./target/release/m1fan preview --samples 10
 ```
 
-Run the binary directly from `target/release`, or install the optional service using the procedure below. Building does not install or start a controller. No prebuilt binary is required.
+Run directly from `target/release`; no binary download is needed. Building does not install or start a controller. For the supported hardware scope and validation status, see [Compatibility](#supported-hardware--compatibility).
 
 ## CLI Usage
 
+**Inspect without taking control**
+
 ```sh
-# Read-only inspection
 ./target/release/m1fan status
 ./target/release/m1fan monitor --samples 10
 ./target/release/m1fan preview --samples 10
 ./target/release/m1fan verify-auto
+```
 
-# Foreground control; Ctrl+C restores automatic management
-sudo ./target/release/m1fan max
-sudo ./target/release/m1fan run
+`monitor` shows live readings; `preview` also shows proposed cooling demand. Omit `--samples` to keep either command running until interrupted.
 
-# Manually started background controller
+**Control in the foreground**
+
+```sh
+sudo ./target/release/m1fan max   # Hardware-reported maximum
+sudo ./target/release/m1fan run   # Automatic thermal policy
+```
+
+Ctrl+C requests and verifies restoration to automatic mode.
+
+**Run in the background**
+
+```sh
 sudo ./target/release/m1fan start
 sudo ./target/release/m1fan daemon-status
 sudo ./target/release/m1fan stop
-
-# Explicit recovery, when no controller owns the lock
-sudo ./target/release/m1fan auto
 ```
 
-`monitor` and `preview` run until interrupted when `--samples` is omitted. `preview` shows validated temperatures and policy demand without writing SMC. `daemon-status` reports service/instance identity, uptime, temperatures, RPM, ownership, transitions, power events, and errors.
+The detached worker survives Terminal closure. Status includes uptime, temperatures, RPM, ownership, transitions, power events and errors. For explicit recovery when no controller owns the lock, use `sudo ./target/release/m1fan auto`.
 
-For a controlled diagnostic session, add `--trace /path/to/new-trace.jsonl`. The destination must be new. Traces contain raw register traffic and runtime measurements; review them before sharing. Normal operation does not create full SMC traces.
+<details>
+<summary><strong>Detailed diagnostics</strong></summary>
+
+Add `--trace /path/to/new-trace.jsonl` to a data/control command to record each SMC operation. The destination must be new. Normal operation does not produce full wire traces. Traces contain raw register traffic and runtime measurements; review them before sharing.
+
+</details>
 
 ## Automatic Thermal Control
 
-| Source | Begin cooling | Request hardware maximum | Clear demand |
+The controller tracks chip and battery cooling demands independently and applies the **higher requested speed**.
+
+| Temperature source | Start cooling | Request maximum | Clear demand |
 | --- | --- | --- | --- |
-| Hottest validated chip sensor | 55°C | 70°C | Below 50°C continuously for 30 seconds |
-| Hottest validated battery sensor | 35°C | 40°C | Below 35°C continuously for 30 seconds |
+| Hottest validated chip sensor | **55°C** | **70°C** | Below 50°C continuously for 30 seconds |
+| Hottest validated battery sensor | **35°C** | **40°C** | Below 35°C continuously for 30 seconds |
 
-An active demand rises linearly from 25% to 100% of the **hardware RPM span**: `minimum + fraction × (maximum − minimum)`. The greater demand wins. Both demands must clear before automatic management is restored. The same policy applies on AC and battery power.
+An active demand rises linearly from 25% to 100% of the hardware-reported RPM span:
 
-These thresholds are configurable-in-source engineering defaults for early, audible cooling, not Apple temperature limits or a battery lifespan guarantee. Battery keys `TB1T` and `TB2T` follow Stats' sensor mapping; their exact physical locations are not established. This program does not manage charging or set a battery charge limit.
+```text
+target = minimum + fraction × (maximum − minimum)
+```
 
-Heating increases the target promptly. Cooling requires a confirmation interval and uses elapsed-time speed reduction with a small-change deadband. Invalid, incomplete, stale, or repeatedly unavailable telemetry triggers recovery and a fresh qualification cycle. Temperature and control behavior are described in [Architecture](docs/ARCHITECTURE.md).
+Both demands must clear before automatic management is restored. Monitoring continues after release. The same policy applies on AC and battery power.
+
+Heating raises the target promptly. Lower requests require confirmation and use elapsed-time speed reduction with a small-change deadband. Invalid, incomplete, stale or repeatedly unavailable telemetry triggers recovery and fresh qualification.
+
+These source-configurable thresholds are engineering defaults for early, audible cooling. They are not Apple temperature limits or a battery lifespan guarantee. Battery keys `TB1T` and `TB2T` follow Stats' mapping; exact physical locations remain unconfirmed. Charging and battery charge limits are outside this tool's scope.
 
 ## Background Service & Sleep/Wake Support
 
-Build and test as an ordinary user. Then install the reviewed binary using its SHA-256:
+The optional system LaunchDaemon manages **`m1fan serve` directly in the foreground**, independent of your Terminal or checkout directory.
+
+Build and test as an ordinary user, then install the reviewed binary:
 
 ```sh
 cargo test --locked
@@ -110,19 +128,53 @@ sudo "/Library/Application Support/M1FanControl/enable.sh"
 sudo "/Library/Application Support/M1FanControl/status.sh"
 ```
 
-Installation starts **disabled**. Enabling registers boot startup and starts `m1fan serve` in the foreground under launchd, independent of a Terminal session. The installed binary and scripts live under `/Library/Application Support/M1FanControl`; they do not depend on the checkout. The local hash checks that installation uses the binary you reviewed; it is not an external release signature.
+Installation starts **disabled**. Enabling registers boot startup and starts monitoring. The local SHA-256 binds installation to the binary you reviewed; it is not an external release signature.
 
-```sh
-# Disable boot startup, stop, and verify automatic restoration
-sudo "/Library/Application Support/M1FanControl/disable.sh"
+| Action | Command |
+| --- | --- |
+| Disable startup, stop and verify automatic restoration | `sudo "/Library/Application Support/M1FanControl/disable.sh"` |
+| Stop, restore and remove the managed installation | `sudo "/Library/Application Support/M1FanControl/uninstall.sh"` |
 
-# Stop, restore, and remove the managed installation
-sudo "/Library/Application Support/M1FanControl/uninstall.sh"
+`m1fan stop` stops the current instance while retaining boot enablement. Use `disable.sh` for persistent disablement. Runtime logs rotate; private management history is retained after uninstall.
+
+Sleep notifications gate control and request restoration before a bounded acknowledgement deadline. Wake and monitoring gaps over five seconds rebuild connections, confirm automatic ownership and require three fresh healthy samples. Recovery attempts use delays of **5 → 15 → 30 → 60 seconds**, then 60 seconds thereafter.
+
+Ordinary errors and SIGINT/SIGTERM/SIGHUP attempt verified restoration. SIGKILL, power loss and kernel failure cannot execute cleanup. The journal retains pending recovery for a subsequent instance when runtime state survives; `/var/run` state is normally cleared across a reboot. See the [service guide](deploy/README.md) for management and upgrade details.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    HID[IOHID chip temperatures] --> Validate[Freshness and sensor validation]
+    Battery[AppleSMC battery temperatures] --> Validate
+    Validate --> Demand[Chip + battery demand]
+    Demand --> Session[Bounded control and readback]
+    Session --> Fans[AppleSMC fan registers]
+    Power[IOPM sleep / wake] --> Lifecycle[Lifecycle supervisor]
+    Launchd[launchd foreground service] --> Lifecycle
+    Lifecycle --> Session
+    Lifecycle <--> Journal[Recovery responsibility]
+    classDef sensor fill:#e6f5f3,stroke:#5da69f,color:#183b3b
+    classDef controller fill:#e9f0fa,stroke:#7397bd,color:#203e5d
+    class HID,Battery sensor
+    class Validate,Demand,Session,Lifecycle controller
 ```
 
-`m1fan stop` stops the current instance without changing boot enablement. Use `disable.sh` for persistent disablement. Logs rotate; private management history is retained after uninstall. See [Service management](deploy/README.md) for paths, failure handling, and upgrade instructions.
+The transport allows only validated fan-control keys and reads hardware speed limits along the control path. An exclusive controller lock prevents concurrent M1FanControl writers. Separate checks distinguish write acknowledgement, mode/target readback, subsequent ownership loss and actual RPM response.
 
-Sleep notifications gate control and request restoration before acknowledging sleep, with a bounded acknowledgement deadline. Wake and monitoring gaps over five seconds rebuild connections and require automatic ownership plus three fresh healthy samples. Recovery attempts use delays of 5, 15, 30, and 60 seconds, then 60 seconds thereafter. Ordinary errors and SIGINT/SIGTERM/SIGHUP attempt verified restoration. SIGKILL, power loss, and kernel failure cannot execute process cleanup; the service journal preserves pending recovery for a subsequent instance when runtime state survives. Runtime state under `/var/run` is normally cleared across a reboot.
+Explore the [full architecture](docs/ARCHITECTURE.md), [development history](docs/DEVELOPMENT_HISTORY.md) and [source provenance](docs/PROVENANCE.md).
+
+## Supported Hardware / Compatibility
+
+Control requires **Apple M1 on ARM64 macOS**, a physical fan, and the expected SMC/IOHID interfaces. Automatic control requires complete named chip sensor groups and both battery keys. Software discovery/control supports multiple fans; hardware validation covers a single-fan M1 MacBook Pro configuration.
+
+| Validation scope | Status |
+| --- | --- |
+| Manual and temperature-triggered acceleration, background operation, stop/restoration, service management | Checked on development M1 hardware |
+| Sleep events, wake reconnection, sensor faults and recovery state machines | Implemented and covered by Mock tests |
+| Physical lid sleep/wake, startup before login, natural cooling through both release thresholds, deliberate crash/restart recovery | End-to-end hardware validation pending |
+
+M1 Pro/Max/Ultra, newer chips, Intel Macs and fanless Macs are outside the supported control scope. Private Apple interfaces may change across macOS versions. Unsupported data is rejected rather than replaced with guessed keys or limits. Do not run another fan controller alongside M1FanControl.
 
 ## Development and Testing
 
@@ -133,25 +185,32 @@ cargo test --locked
 cargo build --locked --release
 ```
 
-The default suite uses synthetic hardware readings, deterministic clocks, temporary files, and injected deployment commands. It does not take fan ownership, install services, or exercise physical sleep. The passive native power-notification test is ignored by default. Shell and plist syntax checks are included in the deployment tests and require macOS tools.
+The v0.5.0 source release passed **250 tests**, with one passive native power test ignored by default. See the [release audit](docs/RELEASE_AUDIT.md) for the recorded verification scope.
 
-Read-only checks on a compatible machine can use `status` and `preview`. Hardware control validation is a separate explicit step. A successful mock suite does not establish physical sleep/wake or compatibility on an untested model.
+Default tests use synthetic hardware readings, deterministic clocks, temporary files and injected deployment commands. They do not take fan ownership, install services or exercise physical sleep. Deployment tests include shell/plist checks and require macOS tools. Hardware validation remains a separate explicit step.
 
 ## Prior Art & Acknowledgments
 
-- [MacFanControl](https://github.com/raminsharifi/MacFanControl): Rust AppleSMC implementation and Apple Silicon control sequences.
-- [Stats](https://github.com/exelban/stats): SMC control, IOHID reading, sensor mappings, and lifecycle prior art.
-- [macos-smc-fan](https://github.com/agoodkind/macos-smc-fan): research on Apple Silicon fan arbitration and system target overwrites.
-- Chromium and Apple interface sources: sensor naming, ABI, event clocks, and power notification semantics.
+M1FanControl builds on the technical work of these projects:
 
-The [Provenance audit](docs/PROVENANCE.md) separates adapted code, protocol knowledge, and independent implementation, with fixed revisions and comparison methods. Applicable copyright and license texts are in [Third-party notices](THIRD_PARTY_NOTICES.md) and `licenses/`.
+- **[Ramin Sharifi's MacFanControl](https://github.com/raminsharifi/MacFanControl)** — adapted Rust AppleSMC transport, fan-control sequences and temperature-discovery patterns.
+- **[Serhiy Mytrovtsiy's Stats](https://github.com/exelban/stats)** — control/release sequences, IOHID acquisition, sensor mappings and lifecycle prior art.
+- **[Alexander Goodkind's macos-smc-fan](https://github.com/agoodkind/macos-smc-fan)** — research on Apple Silicon fan arbitration and system target overwrites.
+- **Chromium and Apple interface sources** — sensor naming, ABI, event clocks and power notification semantics.
+
+The [provenance audit](docs/PROVENANCE.md) records fixed revisions, adapted regions and independent contributions, including the earlier IOHID reader ancestry. Applicable copyrights and full license texts are retained in [third-party notices](THIRD_PARTY_NOTICES.md) and [`licenses/`](licenses/).
 
 ## Original Contributions
 
-The independently implemented engineering work includes staged readback and ownership diagnostics, recovery armed before a potentially mutating operation, typed write restrictions, injected hardware/clock tests, dual-source cooling demand, sensor freshness and membership validation, durable recovery responsibility, and a foreground service with bounded wake/restart qualification and protected management transactions.
+The project's independent engineering work includes:
 
-These contributions build on the prior art above. The SMC transport and parts of sensor acquisition are adapted implementations. [Development history](docs/DEVELOPMENT_HISTORY.md) traces the technical evolution; [Provenance](docs/PROVENANCE.md) gives module-level classifications and differences.
+- **Observable control:** staged readback, ownership-loss diagnostics, typed write restrictions and recovery armed before a potentially mutating operation.
+- **Temperature-driven operation:** independent chip/battery demands, sensor freshness and membership checks, gradual descent and RPM response monitoring.
+- **Managed recovery:** bounded wake/restart qualification, durable responsibility across process instances, protected IPC and verified service-removal transactions.
+- **Testable hardware boundaries:** injected SMC, sensor, clock and power interfaces with deterministic fault scenarios.
+
+The SMC transport and parts of acquisition are adapted implementations. The [module-level assessment](docs/PROVENANCE.md#module-level-assessment) explains the distinction and the concrete differences from each reference.
 
 ## License
 
-[MIT](LICENSE), with applicable third-party copyrights and license terms retained in [Third-party notices](THIRD_PARTY_NOTICES.md). macOS frameworks and developer tools are supplied separately by their respective providers.
+**[MIT](LICENSE)**, with applicable third-party copyrights and license terms retained in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Original visual assets use the project license. macOS frameworks and developer tools are supplied separately by their providers.
