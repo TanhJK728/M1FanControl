@@ -1,0 +1,15 @@
+[package]
+name = "m1fan"
+version = "0.5.0"
+edition = "2024"
+license = "MIT"
+description = "Apple M1 temperature-based fan control with verified automatic restoration"
+
+[dependencies]
+libc = "0.2"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+panic = "unwind"
